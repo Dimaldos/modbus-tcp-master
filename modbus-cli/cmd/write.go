@@ -54,6 +54,14 @@ func writeRegister(register, value int) error {
 		return fmt.Errorf("неверный код функции в ответе: %d", response[7])
 	}
 
+	respAddr := binary.BigEndian.Uint16(response[8:10])
+	respValue := binary.BigEndian.Uint16(response[10:12])
+
+	if respAddr != uint16(register) || respValue != uint16(value) {
+		return fmt.Errorf("несоответствие эхо-ответа: ожидался адрес %d, значение %d, получен адрес %d, значение %d",
+			register, value, respAddr, respValue)
+	}
+
 	fmt.Printf("Успешно записано %d в регистр %d\n", value, register)
 	return nil
 }
