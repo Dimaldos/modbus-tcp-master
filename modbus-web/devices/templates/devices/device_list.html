@@ -89,20 +89,10 @@
             position: absolute; 
             top: 15px; 
             right: 15px; 
+            display: flex;
+            align-items: center;
         }
-        .btn-edit { 
-            background: #27ae60; 
-            color: white; 
-            border: none; 
-            padding: 6px 12px; 
-            margin-right: 5px; 
-            text-decoration: none;
-            border-radius: 3px;
-            font-size: 0.8em;
-            font-weight: 600;
-        }
-        .btn-delete { 
-            background: #e74c3c; 
+        .btn-edit, .btn-delete { 
             color: white; 
             border: none; 
             padding: 6px 12px; 
@@ -110,13 +100,42 @@
             font-size: 0.8em;
             font-weight: 600;
             cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 28px;
+            box-sizing: border-box;
+        }
+        .btn-edit { 
+            background: #27ae60; 
+            margin-right: 5px;
+        }
+        .btn-edit:hover {
+            background: #219653;
+        }
+        .btn-delete { 
+            background: #e74c3c; 
+        }
+        .btn-delete:hover {
+            background: #c0392b;
         }
         .device-card h3 {
             margin-top: 0;
-            margin-right: 80px;
             color: #2c3e50;
             border-bottom: 1px solid #ecf0f1;
             padding-bottom: 10px;
+            position: relative;
+        }
+        /* Псевдоэлемент для расширения линии до конца блока */
+        .device-card h3::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: #ecf0f1;
         }
         .device-info {
             margin: 15px 0;
