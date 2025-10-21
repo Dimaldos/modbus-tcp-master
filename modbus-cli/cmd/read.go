@@ -55,6 +55,6 @@ func readRegister(register int) error {
 	}
 
 	data := binary.BigEndian.Uint16(response[9:])
-	fmt.Printf("Регистр %d: %d\n", register, data)
+	fmt.Printf("Register %d: %d\n", register, data)
 	return nil
 }

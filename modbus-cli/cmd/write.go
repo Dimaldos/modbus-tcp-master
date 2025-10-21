@@ -62,6 +62,6 @@ func writeRegister(register, value int) error {
 			register, value, respAddr, respValue)
 	}
 
-	fmt.Printf("Успешно записано %d в регистр %d\n", value, register)
+	fmt.Printf("Successfully written %d to register %d\n", value, register)
 	return nil
 }

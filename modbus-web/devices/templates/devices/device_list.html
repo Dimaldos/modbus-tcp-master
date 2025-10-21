@@ -218,12 +218,14 @@
             
             return `
                 <div class="device-card" data-device-name="${deviceName}">
+                    
+                    <h3>${deviceName}</h3>
+                    
                     <div class="device-actions">
                         <a href="/edit/${deviceName}/" class="btn-edit">Edit</a>
                         <button class="btn-delete" onclick="deleteDevice('${deviceName}')">Delete</button>
                     </div>
-                    <h3>${deviceName}</h3>
-                    
+
                     <div class="device-info">
                         <p><strong>IP:</strong> ${device.ip}:${device.port}</p>
                         <p><strong>Slave ID:</strong> ${device.slave_id}</p>
