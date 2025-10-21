@@ -1,8 +1,0 @@
-ip: 192.168.2.99
-name: test
-port: 502
-read_mask: 10
-read_register: 51
-slave_id: 1
-write_mask: 10
-write_register: 470

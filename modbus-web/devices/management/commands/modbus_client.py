@@ -4,25 +4,12 @@ import time
 
 class ModbusClient:
     @staticmethod
-    def check_connection(ip, port, slave_id):
-        # Заглушка для проверки соединения - иногда возвращаем ошибку
-        print(f"Checking connection to {ip}:{port} (slave {slave_id})")
-        
-        # Имитация случайных ошибок соединения (10% вероятность)
-        if random.random() < 0.1:
-            raise Exception("Connection timeout")
-            
-        # Имитация задержки сети
-        time.sleep(0.05)
-        return True
-
-    @staticmethod
     def read_state(ip, port, slave_id, read_register, read_mask):
         # Заглушка для чтения состояния
         print(f"Reading state from {ip}:{port} (slave {slave_id})")
         
-        # Имитация случайных ошибок чтения (5% вероятность)
-        if random.random() < 0.05:
+        # Имитация случайных ошибок чтения (10% вероятность)
+        if random.random() < 0.1:
             raise Exception("Read error")
             
         # Имитация задержки сети
