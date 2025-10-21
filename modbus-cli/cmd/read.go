@@ -4,15 +4,19 @@ import (
 	"encoding/binary"
 	"fmt"
 	"net"
+	"time"
 )
 
 func readRegister(register int) error {
 	addr := net.JoinHostPort(ip, fmt.Sprintf("%d", port))
-	conn, err := net.Dial("tcp", addr)
+	conn, err := net.DialTimeout("tcp", addr, time.Duration(timeout)*time.Second)
 	if err != nil {
 		return fmt.Errorf("ошибка подключения к %s: %v", addr, err)
 	}
 	defer conn.Close()
+
+	// Устанавливаем таймаут для операций чтения/записи
+	conn.SetDeadline(time.Now().Add(time.Duration(timeout) * time.Second))
 
 	request := make([]byte, 12)
 	binary.BigEndian.PutUint16(request[0:], 1)                // Transaction ID
@@ -31,6 +35,10 @@ func readRegister(register int) error {
 	response := make([]byte, 256)
 	n, err := conn.Read(response)
 	if err != nil {
+		// Проверяем, это таймаут или другая ошибка
+		if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+			return fmt.Errorf("таймаут при чтении ответа от устройства")
+		}
 		return fmt.Errorf("ошибка чтения ответа: %v", err)
 	}
 
