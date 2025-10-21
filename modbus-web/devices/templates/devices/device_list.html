@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Modbus Devices</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .devices { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .device { border: 1px solid #ccc; padding: 15px; border-radius: 5px; }
+        .connected { color: green; }
+        .disconnected { color: red; }
+        .on { color: green; }
+        .off { color: red; }
+        button { padding: 8px 16px; margin: 5px; cursor: pointer; }
+        .add-device { display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; margin-bottom: 20px; }
+        .loading { color: #666; }
+    </style>
+</head>
+<body>
+    <h1>Modbus Devices</h1>
+    <a href="{% url 'create_device' %}" class="add-device">Add New Device</a>
+    
+    <div id="devices-container">
+        <!-- Контейнер для устройств будет заполняться JavaScript -->
+        <div class="loading">Loading devices...</div>
+    </div>
+
+    <script>
+        // Функция для получения статусов устройств
+        function fetchDeviceStatuses() {
+            fetch('/status/')
+                .then(response => response.json())
+                .then(data => {
+                    updateDeviceDisplay(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching device statuses:', error);
+                });
+        }
+
+        // Функция для обновления отображения устройств
+        function updateDeviceDisplay(devicesData) {
+            const container = document.getElementById('devices-container');
+            
+            if (Object.keys(devicesData).length === 0) {
+                container.innerHTML = '<p>No devices configured. <a href="/create/">Add your first device</a></p>';
+                return;
+            }
+            
+            let html = '';
+            for (const [deviceName, deviceData] of Object.entries(devicesData)) {
+                const device = deviceData.device;
+                const connectionStatus = deviceData.connection;
+                const stateStatus = deviceData.state;
+                
+                html += `
+                <div class="device" data-device-name="${deviceName}">
+                    <h3>${deviceName}</h3>
+                    <p><strong>IP:</strong> ${device.ip}:${device.port}</p>
+                    <p><strong>Slave ID:</strong> ${device.slave_id}</p>
+                    <p><strong>Connection:</strong> 
+                        <span class="${connectionStatus ? 'connected' : 'disconnected'}">
+                            ${connectionStatus ? 'Connected' : 'Disconnected'}
+                        </span>
+                    </p>
+                    <p><strong>State:</strong> 
+                        <span class="${stateStatus ? 'on' : 'off'}">
+                            ${stateStatus ? 'ON' : 'OFF'}
+                        </span>
+                    </p>
+                    <button onclick="toggleDevice('${deviceName}')" ${!connectionStatus ? 'disabled' : ''}>
+                        ${stateStatus ? 'Turn OFF' : 'Turn ON'}
+                    </button>
+                </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // Функция для переключения состояния устройства
+        function toggleDevice(deviceName) {
+            fetch(`/toggle/${deviceName}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // После успешного переключения обновляем статусы
+                    setTimeout(fetchDeviceStatuses, 100);
+                } else {
+                    alert('Error toggling device: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error toggling device:', error);
+                alert('Error toggling device');
+            });
+        }
+
+        // Вспомогательная функция для получения CSRF токена
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Загружаем статусы при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchDeviceStatuses();
+            
+            // Обновляем статусы каждую секунду
+            setInterval(fetchDeviceStatuses, 1000);
+        });
+    </script>
+</body>
+</html>
