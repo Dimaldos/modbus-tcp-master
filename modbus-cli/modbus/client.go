@@ -12,7 +12,7 @@ type Client struct {
 }
 
 func NewClient(ip string, port int, timeout time.Duration) (*Client, error) {
-	addr := fmt.Sprintf("%s:%d", ip, port)
+	addr := net.JoinHostPort(ip, fmt.Sprintf("%d", port))
 	conn, err := net.DialTimeout("tcp", addr, timeout)
 	if err != nil {
 		return nil, err

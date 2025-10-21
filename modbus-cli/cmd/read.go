@@ -7,7 +7,7 @@ import (
 )
 
 func readRegister(register int) error {
-	addr := fmt.Sprintf("%s:%d", ip, port)
+	addr := net.JoinHostPort(ip, fmt.Sprintf("%d", port))
 	conn, err := net.Dial("tcp", addr)
 	if err != nil {
 		return fmt.Errorf("ошибка подключения к %s: %v", addr, err)
@@ -23,9 +23,6 @@ func readRegister(register int) error {
 	binary.BigEndian.PutUint16(request[8:], uint16(register)) // Address
 	binary.BigEndian.PutUint16(request[10:], 1)               // Quantity
 
-	fmt.Print("request: ")
-	fmt.Println(request)
-
 	_, err = conn.Write(request)
 	if err != nil {
 		return fmt.Errorf("ошибка отправки запроса: %v", err)
@@ -40,9 +37,6 @@ func readRegister(register int) error {
 	if n < 9 {
 		return fmt.Errorf("слишком короткий ответ от устройства")
 	}
-
-	fmt.Print("response: ")
-	fmt.Println(response)
 
 	if response[7] != 0x03 {
 		if response[7] == 0x83 {

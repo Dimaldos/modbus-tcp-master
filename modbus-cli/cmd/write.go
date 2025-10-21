@@ -7,7 +7,7 @@ import (
 )
 
 func writeRegister(register, value int) error {
-	addr := fmt.Sprintf("%s:%d", ip, port)
+	addr := net.JoinHostPort(ip, fmt.Sprintf("%d", port))
 	conn, err := net.Dial("tcp", addr)
 	if err != nil {
 		return fmt.Errorf("ошибка подключения к %s: %v", addr, err)
@@ -41,7 +41,7 @@ func writeRegister(register, value int) error {
 	if response[7] != 0x06 {
 		if response[7] == 0x86 {
 			exceptionCode := response[8]
-			return fmt.Errorf("Modbus исключение: код %d", exceptionCode)
+			return fmt.Errorf("modbus исключение: код %d", exceptionCode)
 		}
 		return fmt.Errorf("неверный код функции в ответе: %d", response[7])
 	}
