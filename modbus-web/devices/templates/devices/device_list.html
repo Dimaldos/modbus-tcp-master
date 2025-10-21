@@ -173,11 +173,15 @@
     </div>
 
     <script>
+        // Переменная для хранения текущих данных об устройствах
+        let currentDevicesData = {};
+        
         // Функция для получения статусов устройств
         function fetchDeviceStatuses() {
             fetch('/status/')
                 .then(response => response.json())
                 .then(data => {
+                    currentDevicesData = data;
                     updateDeviceDisplay(data);
                 })
                 .catch(error => {
@@ -187,28 +191,13 @@
                 });
         }
 
-        // Функция для обновления отображения устройств
-        function updateDeviceDisplay(devicesData) {
-            const container = document.getElementById('devices-container');
+        // Функция для создания HTML карточки устройства
+        function createDeviceCard(deviceName, deviceData) {
+            const device = deviceData.device;
+            const connectionStatus = deviceData.connection;
+            const stateStatus = deviceData.state;
             
-            if (Object.keys(devicesData).length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <h2>No devices configured</h2>
-                        <p>Get started by adding your first Modbus device</p>
-                        <a href="/create/" class="add-device" style="margin-top: 15px;">Add Your First Device</a>
-                    </div>
-                `;
-                return;
-            }
-            
-            let html = '<div class="devices-grid">';
-            for (const [deviceName, deviceData] of Object.entries(devicesData)) {
-                const device = deviceData.device;
-                const connectionStatus = deviceData.connection;
-                const stateStatus = deviceData.state;
-                
-                html += `
+            return `
                 <div class="device-card" data-device-name="${deviceName}">
                     <div class="device-actions">
                         <a href="/edit/${deviceName}/" class="btn-edit">Edit</a>
@@ -226,30 +215,110 @@
                         </div>
                         
                         <p>
-                            <span class="status-indicator ${connectionStatus ? 'status-connected' : 'status-disconnected'}"></span>
+                            <span class="status-indicator ${connectionStatus ? 'status-connected' : 'status-disconnected'}" id="connection-indicator-${deviceName}"></span>
                             <strong>Connection:</strong> 
-                            <span class="${connectionStatus ? 'connected' : 'disconnected'}">
+                            <span class="${connectionStatus ? 'connected' : 'disconnected'}" id="connection-text-${deviceName}">
                                 ${connectionStatus ? 'Connected' : 'Disconnected'}
                             </span>
                         </p>
                         <p>
-                            <span class="status-indicator ${stateStatus ? 'status-on' : 'status-off'}"></span>
+                            <span class="status-indicator ${stateStatus ? 'status-on' : 'status-off'}" id="state-indicator-${deviceName}"></span>
                             <strong>State:</strong> 
-                            <span class="${stateStatus ? 'on' : 'off'}">
+                            <span class="${stateStatus ? 'on' : 'off'}" id="state-text-${deviceName}">
                                 ${stateStatus ? 'ON' : 'OFF'}
                             </span>
                         </p>
                     </div>
                     
-                    <button class="btn btn-toggle" onclick="toggleDevice('${deviceName}')" ${!connectionStatus ? 'disabled' : ''}>
+                    <button class="btn btn-toggle" onclick="toggleDevice('${deviceName}')" id="toggle-btn-${deviceName}" ${!connectionStatus ? 'disabled' : ''}>
                         ${stateStatus ? 'Turn OFF' : 'Turn ON'}
                     </button>
                 </div>
-                `;
-            }
-            html += '</div>';
+            `;
+        }
+
+        // Функция для обновления отображения устройств
+        function updateDeviceDisplay(devicesData) {
+            const container = document.getElementById('devices-container');
             
-            container.innerHTML = html;
+            if (Object.keys(devicesData).length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h2>No devices configured</h2>
+                        <p>Get started by adding your first Modbus device</p>
+                        <a href="/create/" class="add-device" style="margin-top: 15px;">Add Your First Device</a>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Если контейнер пуст или нет сетки, создаем всю разметку заново
+            if (!container.querySelector('.devices-grid')) {
+                let html = '<div class="devices-grid">';
+                for (const [deviceName, deviceData] of Object.entries(devicesData)) {
+                    html += createDeviceCard(deviceName, deviceData);
+                }
+                html += '</div>';
+                container.innerHTML = html;
+            } else {
+                // Если сетка уже существует, обновляем только статусы
+                for (const [deviceName, deviceData] of Object.entries(devicesData)) {
+                    updateDeviceStatus(deviceName, deviceData);
+                }
+                
+                // Удаляем устройства, которых больше нет
+                const existingDevices = container.querySelectorAll('.device-card');
+                existingDevices.forEach(card => {
+                    const deviceName = card.dataset.deviceName;
+                    if (!devicesData[deviceName]) {
+                        card.remove();
+                    }
+                });
+                
+                // Если не осталось устройств, показываем сообщение
+                if (container.querySelectorAll('.device-card').length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <h2>No devices configured</h2>
+                            <p>Get started by adding your first Modbus device</p>
+                            <a href="/create/" class="add-device" style="margin-top: 15px;">Add Your First Device</a>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Функция для обновления только статусов устройства (без пересоздания карточки)
+        function updateDeviceStatus(deviceName, deviceData) {
+            const connectionStatus = deviceData.connection;
+            const stateStatus = deviceData.state;
+            
+            // Обновляем индикатор соединения
+            const connectionIndicator = document.getElementById(`connection-indicator-${deviceName}`);
+            const connectionText = document.getElementById(`connection-text-${deviceName}`);
+            
+            if (connectionIndicator && connectionText) {
+                connectionIndicator.className = `status-indicator ${connectionStatus ? 'status-connected' : 'status-disconnected'}`;
+                connectionText.className = connectionStatus ? 'connected' : 'disconnected';
+                connectionText.textContent = connectionStatus ? 'Connected' : 'Disconnected';
+            }
+            
+            // Обновляем индикатор состояния
+            const stateIndicator = document.getElementById(`state-indicator-${deviceName}`);
+            const stateText = document.getElementById(`state-text-${deviceName}`);
+            
+            if (stateIndicator && stateText) {
+                stateIndicator.className = `status-indicator ${stateStatus ? 'status-on' : 'status-off'}`;
+                stateText.className = stateStatus ? 'on' : 'off';
+                stateText.textContent = stateStatus ? 'ON' : 'OFF';
+            }
+            
+            // Обновляем кнопку переключения
+            const toggleBtn = document.getElementById(`toggle-btn-${deviceName}`);
+            if (toggleBtn) {
+                toggleBtn.textContent = stateStatus ? 'Turn OFF' : 'Turn ON';
+                toggleBtn.disabled = !connectionStatus;
+            }
         }
 
         // Функция для переключения состояния устройства

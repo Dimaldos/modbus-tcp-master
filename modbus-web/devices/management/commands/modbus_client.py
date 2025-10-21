@@ -9,8 +9,8 @@ class ModbusClient:
         print(f"Reading state from {ip}:{port} (slave {slave_id})")
         
         # Имитация случайных ошибок чтения (10% вероятность)
-        if random.random() < 0.1:
-            raise Exception("Read error")
+        # if random.random() < 0.1:
+        #     raise Exception("Read error")
             
         # Имитация задержки сети
         time.sleep(0.05)
@@ -24,8 +24,8 @@ class ModbusClient:
         print(f"Writing state {state} to {ip}:{port} (slave {slave_id})")
         
         # Имитация случайных ошибок записи (5% вероятность)
-        if random.random() < 0.05:
-            raise Exception("Write error")
+        # if random.random() < 0.05:
+        #     raise Exception("Write error")
             
         # Имитация задержки сети
         time.sleep(0.05)
