@@ -3,27 +3,172 @@
 <head>
     <title>Modbus Devices</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .devices { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .device { border: 1px solid #ccc; padding: 15px; border-radius: 5px; position: relative; }
-        .connected { color: green; }
-        .disconnected { color: red; }
-        .on { color: green; }
-        .off { color: red; }
-        button { padding: 8px 16px; margin: 5px; cursor: pointer; }
-        .add-device { display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; margin-bottom: 20px; }
-        .loading { color: #666; }
-        .device-actions { position: absolute; top: 10px; right: 10px; }
-        .btn-edit { background: #28a745; color: white; border: none; padding: 5px 10px; margin-right: 5px; }
-        .btn-delete { background: #dc3545; color: white; border: none; padding: 5px 10px; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .header {
+            max-width: 1200px;
+            margin: 0 auto 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h1 {
+            color: #2c3e50;
+            margin: 0;
+        }
+        .devices-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .device-card { 
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+        .device-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+        .connected { color: #27ae60; }
+        .disconnected { color: #e74c3c; }
+        .on { color: #27ae60; }
+        .off { color: #e74c3c; }
+        .btn { 
+            padding: 10px 16px; 
+            margin: 5px; 
+            cursor: pointer; 
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        .btn-toggle {
+            background-color: #3498db;
+            color: white;
+            width: 100%;
+            margin: 15px 0 0 0;
+        }
+        .btn-toggle:hover {
+            background-color: #2980b9;
+        }
+        .btn-toggle:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .add-device { 
+            display: inline-block; 
+            padding: 12px 24px; 
+            background: #3498db; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 4px; 
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        .add-device:hover {
+            background: #2980b9;
+        }
+        .loading { 
+            color: #7f8c8d; 
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+        }
+        .device-actions { 
+            position: absolute; 
+            top: 15px; 
+            right: 15px; 
+        }
+        .btn-edit { 
+            background: #27ae60; 
+            color: white; 
+            border: none; 
+            padding: 6px 12px; 
+            margin-right: 5px; 
+            text-decoration: none;
+            border-radius: 3px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        .btn-delete { 
+            background: #e74c3c; 
+            color: white; 
+            border: none; 
+            padding: 6px 12px; 
+            border-radius: 3px;
+            font-size: 0.8em;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .device-card h3 {
+            margin-top: 0;
+            margin-right: 80px;
+            color: #2c3e50;
+            border-bottom: 1px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+        .device-info {
+            margin: 15px 0;
+        }
+        .device-info p {
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-connected {
+            background-color: #27ae60;
+        }
+        .status-disconnected {
+            background-color: #e74c3c;
+        }
+        .status-on {
+            background-color: #27ae60;
+        }
+        .status-off {
+            background-color: #e74c3c;
+        }
+        .register-info {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-size: 13px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7f8c8d;
+        }
+        .empty-state h2 {
+            color: #95a5a6;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
-    <h1>Modbus Devices</h1>
-    <a href="{% url 'create_device' %}" class="add-device">Add New Device</a>
+    <div class="header">
+        <h1>Modbus Devices</h1>
+        <a href="{% url 'create_device' %}" class="add-device">+ Add New Device</a>
+    </div>
     
     <div id="devices-container">
-        <!-- Контейнер для устройств будет заполняться JavaScript -->
         <div class="loading">Loading devices...</div>
     </div>
 
@@ -37,6 +182,8 @@
                 })
                 .catch(error => {
                     console.error('Error fetching device statuses:', error);
+                    document.getElementById('devices-container').innerHTML = 
+                        '<div class="empty-state"><h2>Error loading devices</h2><p>Please check your connection and try again</p></div>';
                 });
         }
 
@@ -45,43 +192,62 @@
             const container = document.getElementById('devices-container');
             
             if (Object.keys(devicesData).length === 0) {
-                container.innerHTML = '<p>No devices configured. <a href="/create/">Add your first device</a></p>';
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h2>No devices configured</h2>
+                        <p>Get started by adding your first Modbus device</p>
+                        <a href="/create/" class="add-device" style="margin-top: 15px;">Add Your First Device</a>
+                    </div>
+                `;
                 return;
             }
             
-            let html = '';
+            let html = '<div class="devices-grid">';
             for (const [deviceName, deviceData] of Object.entries(devicesData)) {
                 const device = deviceData.device;
                 const connectionStatus = deviceData.connection;
                 const stateStatus = deviceData.state;
                 
                 html += `
-                <div class="device" data-device-name="${deviceName}">
+                <div class="device-card" data-device-name="${deviceName}">
                     <div class="device-actions">
                         <a href="/edit/${deviceName}/" class="btn-edit">Edit</a>
                         <button class="btn-delete" onclick="deleteDevice('${deviceName}')">Delete</button>
                     </div>
                     <h3>${deviceName}</h3>
-                    <p><strong>IP:</strong> ${device.ip}:${device.port}</p>
-                    <p><strong>Slave ID:</strong> ${device.slave_id}</p>
-                    <p><strong>Write Register:</strong> ${device.write_register} (mask: ${device.write_mask})</p>
-                    <p><strong>Read Register:</strong> ${device.read_register} (mask: ${device.read_mask})</p>
-                    <p><strong>Connection:</strong> 
-                        <span class="${connectionStatus ? 'connected' : 'disconnected'}">
-                            ${connectionStatus ? 'Connected' : 'Disconnected'}
-                        </span>
-                    </p>
-                    <p><strong>State:</strong> 
-                        <span class="${stateStatus ? 'on' : 'off'}">
-                            ${stateStatus ? 'ON' : 'OFF'}
-                        </span>
-                    </p>
-                    <button onclick="toggleDevice('${deviceName}')" ${!connectionStatus ? 'disabled' : ''}>
+                    
+                    <div class="device-info">
+                        <p><strong>IP:</strong> ${device.ip}:${device.port}</p>
+                        <p><strong>Slave ID:</strong> ${device.slave_id}</p>
+                        
+                        <div class="register-info">
+                            <p><strong>Write:</strong> Register ${device.write_register} (Mask: ${device.write_mask})</p>
+                            <p><strong>Read:</strong> Register ${device.read_register} (Mask: ${device.read_mask})</p>
+                        </div>
+                        
+                        <p>
+                            <span class="status-indicator ${connectionStatus ? 'status-connected' : 'status-disconnected'}"></span>
+                            <strong>Connection:</strong> 
+                            <span class="${connectionStatus ? 'connected' : 'disconnected'}">
+                                ${connectionStatus ? 'Connected' : 'Disconnected'}
+                            </span>
+                        </p>
+                        <p>
+                            <span class="status-indicator ${stateStatus ? 'status-on' : 'status-off'}"></span>
+                            <strong>State:</strong> 
+                            <span class="${stateStatus ? 'on' : 'off'}">
+                                ${stateStatus ? 'ON' : 'OFF'}
+                            </span>
+                        </p>
+                    </div>
+                    
+                    <button class="btn btn-toggle" onclick="toggleDevice('${deviceName}')" ${!connectionStatus ? 'disabled' : ''}>
                         ${stateStatus ? 'Turn OFF' : 'Turn ON'}
                     </button>
                 </div>
                 `;
             }
+            html += '</div>';
             
             container.innerHTML = html;
         }
