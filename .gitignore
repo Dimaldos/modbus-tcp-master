@@ -1,4 +1,5 @@
-modbus-cli/mb.exe
-modbus-cli/mb
+/modbus-cli/mb.exe
+/modbus-cli/mb
 
 __pycache__/
+/modbus-web/configs/
