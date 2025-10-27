@@ -19,3 +19,13 @@ GOOS=windows GOARCH=amd64 go build -o mb.exe
 ```bash
 GOOS=linux GOARCH=amd64 go build -o mb_linux
 ```
+# modbus-web
+## Установка зависимостей
+```cmd
+pip install -r requirements.txt
+```
+## Использоваение
+```cmd
+python manage.py runserver
+```
+Доступ по [http://localhost:8000]
